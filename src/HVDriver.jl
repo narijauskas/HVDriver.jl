@@ -50,7 +50,25 @@ end
 
 # import n channels of teensy data from filename
 # returns a tuple of vectors, starting with time in μs, followed by raw data
-function import_teensy(filename, n)
+function import_teensy(filename)
+    dataChannels = Dict()
+    channels = ["time", "pin", "value"]
+    file = CSV.File(filename; header = channels, footerskip = 2)
+    for row in file
+        if !haskey(dataChannels, row.pin)
+            dataChannels[row.pin] = [[],[]]
+        end
+        # push!(dataChannels[parse(Int64, row.pin)][1], parse(Int64, row.time))
+        push!(dataChannels[row.pin][1], row.time)
+        # push!(dataChannels[parse(Int64, row.pin)][2], parse(Int64, row.value))
+        push!(dataChannels[row.pin][2], row.value)
+    end
+    finalData = []
+    for (key, val) in dataChannels
+        push!(finalData, val[1])
+        push!(finalData, val[2])
+    end
+    return (finalData...,)
 end
 
 
